@@ -17,6 +17,13 @@ Y,C,green,S
 C,Z,green,S
 
 """
+import random
+
+def choose_random_station(station_list):
+    return random.choice(station_list)
+
+def choose_random_direction():
+    return random.choice(["S","N"])
 
 def read_station_delays(f):
     with open(f) as h:
@@ -27,25 +34,48 @@ def read_station_delays(f):
                 outdata_dict[station] = delay
     return outdata_dict
 
-def import_railroad_network(f):
+def read_nested_lists_from_file(f):
     with open(f) as h:
         indata = h.readlines()
-        outdata = [[element.strip("\n").split(",")] for element in indata]
+        outdata = [element.strip("\n").split(",") for element in indata]
         return outdata
 
-def construct_railroad_network(l): 
-    network = {}
-    for i in l:
-        for el in i:
-            if el[0] not in network:
-                network[el[0]] = []
-            network[el[0]].append(el[1])
-            if el[1] not in network:
-                network[el[1]] = []
-            network[el[1]].append(el[0])
-    return network
+
+def station_creator(nested_list):
+    stations = []
+    for id, delay in nested_list:
+        try:
+            delay = float(delay)
+            station = Station(id=id, delay=delay)
+            stations.append(station)
+        except:
+            raise ValueError("Float expected")
+    return stations
+
+def connection_creator(nested_lists, stations):
+    connection_list = []
+    current_line = None
+    for current, next, line, direction in nested_lists:
+        if line in connection_list:
+            # get the line object
+            current_line.add()
+        else:
+            connection_list.append(line)
+            #create line object with info
 
 
+
+# def construct_railroad_network(connection_lists): 
+#     network = {}
+#     for connection in connection_lists:
+#         for element in connection:
+#             if element[0] not in network:
+#                 network[element[0]] = []
+#             network[element[0]].append(element[1])
+#             if element[1] not in network:
+#                 network[element[1]] = []
+#             network[element[1]].append(element[0])
+#     return network
 
 # def construct_railroad_network_test(l):
 #     network = {}
@@ -59,90 +89,127 @@ def construct_railroad_network(l):
 #             network[(i[2], "S")].append((i[1], i[0]))
 #     return network
 
-
 class Train():
-    def __init__(self, id) -> None:
+        
+    def __init__(self, id, line, direction, current_station) -> None:
         self.id = int(id)
-
-
-    def locate(self, network):
-        #station = 
-        #direction = 
-        #line = 
-        pass
+        self.line = line
+        self.direction = direction
+        self.current_station = current_station
 
     def current_position(self):
-        return [self.station, self.direction, self.line]
+        return [self.current_station, self.direction, self.line]
 
-    def move(self):
-        pass
-
+    def move(self, delay_prob, next_station):
+        is_delayed = random.random() < delay_prob
+        if not is_delayed:
+            self.current_station = next_station
 
 class Station():
 
-    def __init__(self, node):
-        self.id = node
-        self.adjacent = {}
+    def __init__(self, id, delay):
+        self.id = id
+        self.delay = delay
+        
 
     def __str__(self):
-        return str(self.id) + ' adjacent: ' + str([x.id for x in self.adjacent])
+        return str(self.id)
 
-    def add_destination(self, destination, weight=0):
-        self.adjacent[destination] = weight
+    def set_station_north(self, next_station_north):
+        self.next_station_north = next_station_north
 
-    def get_connections(self):
-        return self.adjacent.keys()  
+    def set_station_south(self, next_station_south):
+        self.next_station_south = next_station_south
 
     def get_id(self):
         return self.id
+    
+    def get_delay(self):
+        return self.delay
 
-    def get_weight(self, destination):
-        return self.adjacent[destination]
+    def get_next(self, direction = "S"):
+        if direction.upper() == "S":
+            return self.next_station_south
+        else:
+            return self.next_station_north
 
-    def get_line(self, line):
-        return self.adjacent.keys()
+class Connection():
 
+    def __init__(self, beginning, next, line):
+        self.beginning = beginning
+        self.next = next
+        self.line = line
+
+    def set_beginning(self, station):
+        self.beginning = station
+
+    def set_next(self, station):
+        self.next = station
+
+    def get_beginning(self):
+        return self.beginning
+
+    def get_next(self):
+        return self.next
+
+    def get_line(self):
+        return self.line
+
+
+class Line():
+    
+    def __init__(self, list_of_stations):
+        self.list_of_stations = list(list_of_stations)
+
+    def get_beginning_station_southward(self):
+        return list(self.get_list_of_stations)[0]
+
+    def get_final_station_southward(self):
+        return list(self.get_list_of_stations)[-1]
+
+    def get_beginning_station_northward(self):
+        return list(self.get_list_of_stations)[-1]
+
+    def get_final_station_northward(self):
+        return list(self.get_list_of_stations)[0]  
+        
+    def get_list_of_stations(self):
+        return self.list_of_stations
 
 class Railroad_Network():
 
-    def __init__(self, gdict = None) -> None:
-        if gdict is None:
-            gdict = []
-        self.gdict = gdict
-
+    def __init__(self, graph = []) -> None:
+        self.graph = graph
+        
     #Get the keys to the dictionary.
     def get_stations(self): #vertices
-        return list(self.gdict.keys())
+        return list(self.graph.keys())
 
     def connections(self): #edges
-        return self.findconnections()
+        return self.get_connections()
 
     # Find the distinct list of edges
-    def findconnections(self):
-      stationname = []
-      for vrtx in self.gdict:
-         for nxtvrtx in self.gdict[vrtx]:
-            if {nxtvrtx, vrtx} not in stationname:
-               stationname.append({vrtx, nxtvrtx})
-      return stationname
+    def get_connections(self):
+      station_name = []
+      for vertex in self.graph:
+         for next_vertex in self.graph[vertex]:
+            if {next_vertex, vertex} not in station_name:
+               station_name.append({vertex, next_vertex})
+      return station_name
 
     # Add the station as a key
-    def addStation(self, vrtx):
-      if vrtx not in self.gdict:
-         self.gdict[vrtx] = []
+    def add_station(self, vertex):
+      if vertex not in self.graph:
+         self.graph[vertex] = []
     
     # Add the new connection
-    def addConnection(self, edge):
+    def add_connection(self, edge):
       edge = set(edge)
-      (vrtx1, vrtx2) = tuple(edge)
-      if vrtx1 in self.gdict:
-         self.gdict[vrtx1].append(vrtx2)
+      (vertex_1, vertex_2) = tuple(edge)
+      if vertex_1 in self.graph:
+         self.graph[vertex_1].append(vertex_2)
       else:
-         self.gdict[vrtx1] = [vrtx2]
-
-    #def update(self, ):
-
-
+         self.graph[vertex_1] = [vertex_2]
 
 def user_inputs():
     stations_input = input("Enter name of stations file:  ").upper()
@@ -166,10 +233,13 @@ def user_inputs():
     return stations_input, connections_user, no_of_trains_user
 
 
-delays = read_station_delays("stations.txt")
-connections = import_railroad_network("connections.txt")
-rail_network = construct_railroad_network(connections)
-g = Railroad_Network(rail_network)
+stations = read_nested_lists_from_file("stations.txt")
+connections = read_nested_lists_from_file("teststations.txt")
+print(connections)
+n = 1
+station_obj = station_creator(stations)
+print([station.get_id() for station in station_obj])
+
 
 
 # def main():
