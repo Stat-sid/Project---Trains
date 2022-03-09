@@ -25,15 +25,6 @@ def choose_random_station(station_list):
 def choose_random_direction():
     return random.choice(["S","N"])
 
-def read_station_delays(f):
-    with open(f) as h:
-            indata = h.readlines()
-            outdata_dict = {}
-            for i in indata:
-                station, delay = i.strip("\n").split(",")
-                outdata_dict[station] = delay
-    return outdata_dict
-
 def read_nested_lists_from_file(f):
     with open(f) as h:
         indata = h.readlines()
@@ -49,45 +40,37 @@ def station_creator(nested_list):
             station = Station(id=id, delay=delay)
             stations.append(station)
         except:
-            raise ValueError("Float expected")
+            raise ValueError("Float expected.")
     return stations
 
-def connection_creator(nested_lists, stations):
-    connection_list = []
-    current_line = None
+def set_station_delays(set_of_stations, nested_lists):
+    for station in set_of_stations:
+        for id, delay in nested_lists:
+            if station.get_id() == id:
+                station.set_delay(delay)
+                #print(station.get_delay())
+
+def get_matching_station(station, set_of_stations):
+    for s in set_of_stations:
+        if s.get_id() == station:
+            station = s
+    return s
+
+def connection_creator(nested_lists, set_of_stations):
+
+    connections = []
     for current, next, line, direction in nested_lists:
-        if line in connection_list:
-            # get the line object
-            current_line.add()
-        else:
-            connection_list.append(line)
-            #create line object with info
-
-
-
-# def construct_railroad_network(connection_lists): 
-#     network = {}
-#     for connection in connection_lists:
-#         for element in connection:
-#             if element[0] not in network:
-#                 network[element[0]] = []
-#             network[element[0]].append(element[1])
-#             if element[1] not in network:
-#                 network[element[1]] = []
-#             network[element[1]].append(element[0])
-#     return network
-
-# def construct_railroad_network_test(l):
-#     network = {}
-#     for i in l:
-#         if i[2] not in network:
-#             network[(i[2], i[3])] = []
-#         network[(i[2], i[3]].append((i[0], i[1]))
-#         if i[3] == "S":
-#             network[(i[2], "N")].append((i[1], i[0]))
-#         if i[3] == "N":
-#             network[(i[2], "S")].append((i[1], i[0]))
-#     return network
+        from_station = get_matching_station(current, set_of_stations)
+        #print(current_station)
+        to_station = get_matching_station(next, set_of_stations)
+        #print(next_station)
+        new_connection = Connection(from_station, to_station, line)
+        # for station in set_of_stations:
+        #     if station.get_id() == current:
+        #         if station.get_id() == next:
+        #             newconnection = Connection(station, next, line)
+        connections.append(new_connection)
+    return connections
 
 class Train():
         
@@ -107,13 +90,15 @@ class Train():
 
 class Station():
 
-    def __init__(self, id, delay):
+    def __init__(self, id, delay = 0):
         self.id = id
         self.delay = delay
         
-
     def __str__(self):
         return str(self.id)
+
+    def set_delay(self, delay):
+        self.delay = delay
 
     def set_station_north(self, next_station_north):
         self.next_station_north = next_station_north
@@ -121,11 +106,17 @@ class Station():
     def set_station_south(self, next_station_south):
         self.next_station_south = next_station_south
 
+    def set_line(self, line):
+        self.line = line
+
     def get_id(self):
         return self.id
     
     def get_delay(self):
         return self.delay
+
+    def get_line(self):
+        return self.line
 
     def get_next(self, direction = "S"):
         if direction.upper() == "S":
@@ -133,12 +124,18 @@ class Station():
         else:
             return self.next_station_north
 
+    def __hash__(self):
+        return hash(self.id)
+
 class Connection():
 
     def __init__(self, beginning, next, line):
         self.beginning = beginning
         self.next = next
         self.line = line
+
+    def __repr__(self):
+     return str([self.beginning, self.next, self.line])
 
     def set_beginning(self, station):
         self.beginning = station
@@ -233,12 +230,17 @@ def user_inputs():
     return stations_input, connections_user, no_of_trains_user
 
 
-stations = read_nested_lists_from_file("stations.txt")
-connections = read_nested_lists_from_file("teststations.txt")
+stations_data = read_nested_lists_from_file("stations.txt")
+connections_data = read_nested_lists_from_file("connections.txt")
+#print(connections)
+#station_obj = station_creator2(connections)
+stations = station_creator(stations_data)
+#set_station_delays(station_obj, stations_with_delays)
+#[print(station.get_id(), station.get_next(), station.get_line(), station.get_delay()) for station in station_obj]
+connections = connection_creator(connections_data, stations)
 print(connections)
-n = 1
-station_obj = station_creator(stations)
-print([station.get_id() for station in station_obj])
+#[print(connection.get_beginning(), connection.get_next(), connection.get_line()) for connection in connection_creator]
+
 
 
 
