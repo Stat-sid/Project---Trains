@@ -53,22 +53,17 @@ def set_station_delays(set_of_stations, nested_lists):
 def get_matching_station(station, set_of_stations):
     for s in set_of_stations:
         if s.get_id() == station:
-            station = s
-    return s
+            return s
 
 def connection_creator(nested_lists, set_of_stations):
-
     connections = []
     for current, next, line, direction in nested_lists:
+        for station in set_of_stations:
+            if station.get_id() == current:
+                new_connection = Connection(current, next, line)
         from_station = get_matching_station(current, set_of_stations)
-        #print(current_station)
         to_station = get_matching_station(next, set_of_stations)
-        #print(next_station)
         new_connection = Connection(from_station, to_station, line)
-        # for station in set_of_stations:
-        #     if station.get_id() == current:
-        #         if station.get_id() == next:
-        #             newconnection = Connection(station, next, line)
         connections.append(new_connection)
     return connections
 
@@ -237,10 +232,9 @@ connections_data = read_nested_lists_from_file("connections.txt")
 stations = station_creator(stations_data)
 #set_station_delays(station_obj, stations_with_delays)
 #[print(station.get_id(), station.get_next(), station.get_line(), station.get_delay()) for station in station_obj]
-connections = connection_creator(connections_data, stations)
-print(connections)
-#[print(connection.get_beginning(), connection.get_next(), connection.get_line()) for connection in connection_creator]
-
+connections_obj = connection_creator(connections_data, stations)
+print(connections_obj)
+[print(connection.get_beginning(), connection.get_next(), connection.get_line()) for connection in connections_obj]
 
 
 
