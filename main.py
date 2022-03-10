@@ -33,7 +33,6 @@ def read_nested_lists_from_file(f):
         outdata = [element.strip("\n").split(",") for element in indata]
         return outdata
 
-
 def station_creator(nested_list):
     stations = []
     for id, delay in nested_list:
@@ -57,17 +56,11 @@ def get_matching_station(station, set_of_stations):
         if s.get_id() == station:
             return s
 
-def connection_creator(nested_lists, set_of_stations):
-    connections = []
-    for current, next, line, direction in nested_lists:
-        for station in set_of_stations:
-            if station.get_id() == current:
-                new_connection = Connection(current, next, line)
-        from_station = get_matching_station(current, set_of_stations)
-        to_station = get_matching_station(next, set_of_stations)
-        new_connection = Connection(from_station, to_station, line)
-        connections.append(new_connection)
-    return connections
+def add_connections_to_stations(nested_lists, set_of_stations):
+    for _from, to, line, direction in nested_lists:
+        from_station = get_matching_station(_from, set_of_stations)
+        new_connection = Connection(to, line, direction)
+        from_station.add_connection(new_connection)
 
 def user_inputs():
     stations_input = input("Enter name of stations file:  ").upper()
@@ -98,9 +91,9 @@ connections_data = read_nested_lists_from_file("connections.txt")
 stations = station_creator(stations_data)
 #set_station_delays(station_obj, stations_with_delays)
 #[print(station.get_id(), station.get_next(), station.get_line(), station.get_delay()) for station in station_obj]
-connections_obj = connection_creator(connections_data, stations)
+connections_obj = add_connections_to_stations(connections_data, stations)
 print(connections_obj)
-[print(connection.get_beginning(), connection.get_next(), connection.get_line()) for connection in connections_obj]
+[print(connection.get_next(), connection.get_line()) for connection in connections_obj]
 
 
 
