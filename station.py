@@ -18,12 +18,15 @@ class Station():
         return self.delay
 
     def get_next_station(self, line, direction):
-        next_station = filter(
-            lambda c: c.get_to()
-                if c.get_line()==line and c.get_direction()==direction
-                else None
-            , self.connections)
-        return next_station
+        filtered_connection = filter(
+            lambda c: True if c.get_line()==line and c.get_direction()==direction else False,
+            self.connections
+        )
+        try:
+            next_station = next(filtered_connection).get_to()
+            return next_station
+        except StopIteration:
+            return None
     
     def get_connections(self):
         return self.connections
