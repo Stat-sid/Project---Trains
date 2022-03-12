@@ -6,7 +6,8 @@ class Connection():
         self.direction = direction
 
     def __repr__(self):
-     return str([self.next, self.line, self.direction])
+     return str([self.to, self.line, self.direction])
+        # return str(self.to)
 
     def get_to(self):
         return self.to
