@@ -9,7 +9,10 @@ class Train():
         self.current_station = current_station
 
     def current_position(self):
-        return [self.current_station, self.direction, self.line]
+        return [self.current_station.get_id(), self.direction, self.line]
+
+    def get_id(self):
+        return self.id
 
     # I know this will not work right for a station without connections.
     def move(self):
@@ -28,7 +31,6 @@ class Train():
             return True
         else:
             return False
-
 
     def __get_next_station(self):
         return self.current_station.get_next_station(self.line, self.direction)
