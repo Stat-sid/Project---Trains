@@ -60,20 +60,20 @@ def station_creator(nested_lists):
             raise ValueError("Float expected.")
     return stations
 
-def line_creator(nested_lists):
-    """
-    CODESMELL - FIX IT!
-    """  
-    line_dict = {}
-    for _from, to, line, direction in nested_lists:
-        if line not in line_dict:
-            line_dict[line] = [_from]
-        elif _from not in line_dict[line]:
-            line_dict[line].append(_from)
-    for _from, to, line, direction in nested_lists:
-        if to not in line_dict[line]:
-            line_dict[line].append(to)
-    return line_dict
+# def line_creator(nested_lists):
+#     """
+#     CODESMELL - FIX IT!
+#     """  
+#     line_dict = {}
+#     for _from, to, line, direction in nested_lists:
+#         if line not in line_dict:
+#             line_dict[line] = [_from]
+#         elif _from not in line_dict[line]:
+#             line_dict[line].append(_from)
+#     for _from, to, line, direction in nested_lists:
+#         if to not in line_dict[line]:
+#             line_dict[line].append(to)
+#     return line_dict
 
 
 # def set_station_delays(set_of_stations, nested_lists):
@@ -97,28 +97,46 @@ def get_matching_line(station, line_dict):
             return line
 
 
+# def add_connections_to_stations(nested_lists, list_of_stations):
+#     for _from, to, line, direction in nested_lists:
+
+#         # Add connection:               _from -> to
+#         from_station = get_matching_station(_from, list_of_stations)
+#         new_connection = Connection(to, line, direction)
+#         from_station.add_connection(new_connection)
+
+#         # Add symmetrical connection:   to -> _from
+#         to_station = get_matching_station(to, list_of_stations)
+#         if direction == "S":
+#             new_connection = Connection(_from, line, "N")
+#         elif direction == "N":
+#             new_connection = Connection(_from, line, "S")
+#         to_station.add_connection(new_connection)
+
 def add_connections_to_stations(nested_lists, list_of_stations):
     for _from, to, line, direction in nested_lists:
+        from_station = get_matching_station(_from, list_of_stations)
+        to_station = get_matching_station(to, list_of_stations)
 
         # Add connection:               _from -> to
-        from_station = get_matching_station(_from, list_of_stations)
-        new_connection = Connection(to, line, direction)
+        new_connection = Connection(to_station, line, direction)
         from_station.add_connection(new_connection)
 
         # Add symmetrical connection:   to -> _from
-        to_station = get_matching_station(to, list_of_stations)
         if direction == "S":
-            new_connection = Connection(_from, line, "N")
+            new_connection = Connection(from_station, line, "N")
         elif direction == "N":
-            new_connection = Connection(_from, line, "S")
+            new_connection = Connection(from_station, line, "S")
         to_station.add_connection(new_connection)
 
-def create_random_world(no_of_trains, stations_list, line_dict):
+def create_random_world(no_of_trains, stations_list):
     set_of_trains = set()
-    for train_id in range(no_of_trains):
+    for train_id in range(1, no_of_trains+1):
         random_station = choose_random_station(stations_list)
-        random_direction = choose_random_direction()
-        assigned_line = get_matching_line(random_station, line_dict)
+        random_connection = random.choice(random_station.get_connections())
+        assigned_line = random_connection.get_line()
+        random_direction = random_connection.get_direction()
+        # assigned_line = get_matching_line(random_station, line_dict)
         new_train = Train(id=train_id, line=assigned_line ,direction=random_direction, current_station=random_station)
         set_of_trains.add(new_train)
     return set_of_trains
@@ -152,21 +170,46 @@ def user_inputs():
 
 stations_data = read_nested_lists_from_file("stations.txt")
 connections_data = read_nested_lists_from_file("connections.txt")
-test_lines = line_creator(connections_data)
 stations_obj = station_creator(stations_data)
-#[print(station.get_id(), station.get_next(), station.get_line(), station.get_delay()) for station in station_obj]
 add_connections_to_stations(connections_data, stations_obj)
-#print(station.get_next_station()) for station in stations_obj
-# [print(station, "towards", station.get_next_station("blue", "S")) for station in stations_obj]
-# [print(station, "towards", station.get_next_station("blue", "N")) for station in stations_obj]
-# [print(station.get_next_station("blue", "N")) for station in stations_obj]
-# [print(station.get_next_station("green", "S")) for station in stations_obj]
-# [print(station.get_next_station("green", "N")) for station in stations_obj]
-# for station in stations_obj:
-#     line = get_matching_line(station, test_lines)
-#     print(station.get_id(), "is in", line)
-test_world = create_random_world(10, stations_obj, test_lines)
+test_world = create_random_world(1, stations_obj)
 [print(train.get_id(), train.current_position()) for train in test_world]
+for train in test_world:
+    train.move()
+    print(train.get_id(), train.current_position())
+    train.move()
+    print(train.get_id(), train.current_position())
+    train.move()
+    print(train.get_id(), train.current_position())
+    train.move()
+    print(train.get_id(), train.current_position())
+    train.move()
+    print(train.get_id(), train.current_position())
+    train.move()
+    print(train.get_id(), train.current_position())
+    train.move()
+    print(train.get_id(), train.current_position())
+    train.move()
+    print(train.get_id(), train.current_position())
+    train.move()
+    print(train.get_id(), train.current_position())
+    train.move()
+    print(train.get_id(), train.current_position())
+    train.move()
+    print(train.get_id(), train.current_position())
+    train.move()
+    print(train.get_id(), train.current_position())
+    train.move()
+    print(train.get_id(), train.current_position())
+    train.move()
+    print(train.get_id(), train.current_position())
+    train.move()
+    print(train.get_id(), train.current_position())
+    train.move()
+    print(train.get_id(), train.current_position())
+    train.move()
+    print(train.get_id(), train.current_position())
+    
 
 
 
