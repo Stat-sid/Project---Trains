@@ -18,9 +18,11 @@ C,Z,green,S
 
 """
 import random
+from re import A
 from station import Station
 from connection import Connection
 from train import Train
+from world import World
 
 def choose_random_station(station_list):
     """
@@ -34,9 +36,6 @@ def choose_random_direction():
     """
     return random.choice(["S","N"])
 
-def choose_random_line(list_of_lines):
-    return random.choice(list_of_lines)
-
 def read_nested_lists_from_file(f):
     """
     Reads file f and gives a list of lists as output.
@@ -45,6 +44,24 @@ def read_nested_lists_from_file(f):
         indata = h.readlines()
         outdata = [element.strip("\n").split(",") for element in indata]
         return outdata
+
+def get_string(prompt):
+    string_input = input(str(prompt)).lower()
+    if type(string_input) != str:
+        try:
+            string_input = str(string_input)
+        except ValueError:
+            return "EXIT"
+    return string_input
+
+def get_int(prompt):
+    int_input = input((prompt))
+    if type(int_input) != int:
+        try:
+            int_input = int(int_input)
+        except ValueError:
+            return "EXIT"
+    return int_input
 
 def station_creator(nested_lists):
     """
@@ -60,29 +77,6 @@ def station_creator(nested_lists):
             raise ValueError("Float expected.")
     return stations
 
-# def line_creator(nested_lists):
-#     """
-#     CODESMELL - FIX IT!
-#     """  
-#     line_dict = {}
-#     for _from, to, line, direction in nested_lists:
-#         if line not in line_dict:
-#             line_dict[line] = [_from]
-#         elif _from not in line_dict[line]:
-#             line_dict[line].append(_from)
-#     for _from, to, line, direction in nested_lists:
-#         if to not in line_dict[line]:
-#             line_dict[line].append(to)
-#     return line_dict
-
-
-# def set_station_delays(set_of_stations, nested_lists):
-#     for station in set_of_stations:
-#         for id, delay in nested_lists:
-#             if station.get_id() == id:
-#                 station.set_delay(delay)
-#                 #print(station.get_delay())
-
 def get_matching_station(station, list_of_stations):
     """
     Takes a station id(str) and a list of station objects and matches the id with an existing station object in the list.
@@ -96,22 +90,10 @@ def get_matching_line(station, line_dict):
         if station.get_id() in line_dict[line]:
             return line
 
-
-# def add_connections_to_stations(nested_lists, list_of_stations):
-#     for _from, to, line, direction in nested_lists:
-
-#         # Add connection:               _from -> to
-#         from_station = get_matching_station(_from, list_of_stations)
-#         new_connection = Connection(to, line, direction)
-#         from_station.add_connection(new_connection)
-
-#         # Add symmetrical connection:   to -> _from
-#         to_station = get_matching_station(to, list_of_stations)
-#         if direction == "S":
-#             new_connection = Connection(_from, line, "N")
-#         elif direction == "N":
-#             new_connection = Connection(_from, line, "S")
-#         to_station.add_connection(new_connection)
+def get_matching_train(set_of_trains, id):
+    for train in set_of_trains:
+        if train.get_id() == id:
+            return train
 
 def add_connections_to_stations(nested_lists, list_of_stations):
     for _from, to, line, direction in nested_lists:
@@ -129,7 +111,7 @@ def add_connections_to_stations(nested_lists, list_of_stations):
             new_connection = Connection(from_station, line, "S")
         to_station.add_connection(new_connection)
 
-def create_random_world(no_of_trains, stations_list):
+def create_trains(no_of_trains, stations_list):
     set_of_trains = set()
     for train_id in range(1, no_of_trains+1):
         random_station = choose_random_station(stations_list)
@@ -141,86 +123,117 @@ def create_random_world(no_of_trains, stations_list):
         set_of_trains.add(new_train)
     return set_of_trains
 
+def create_world(list_of_stations, set_of_trains):
+    world = World(list_of_stations, set_of_trains)
+    return world
+
 def tick(set_of_trains):
     for train in set_of_trains:
         train.move()
 
 def user_inputs():
-    #CLI
-    stations_input = input("Enter name of stations file:  ").upper()
-    if type(stations_input) != str:
-        try:
-            stations_input = str(stations_input)
-        except ValueError:
-            return "EXIT"
-    connections_user = input("Enter name of connections file:  ").upper()
-    if type(connections_user) != str:
-        try:
-            connections_user = str(connections_user)
-        except ValueError:
-            return "EXIT"
-    no_of_trains_user = input("Enter how many trains to simulate:  ").upper()
-    if type(no_of_trains_user) != int:
-        try:
-            no_of_trains_user = int(no_of_trains_user)
-        except ValueError:
-            return "EXIT"
+    stations_input = get_string("Enter name of stations file:  ")
+    connections_user = get_string("Enter name of connections file:  ")
+    no_of_trains_user = get_int("Enter how many trains to simulate:  ")
     return stations_input, connections_user, no_of_trains_user
 
+def is_delayed(train_object):
+    if train_object._am_I_delayed():
+        return "(DELAY)"
+    else:
+        return ""
 
-stations_data = read_nested_lists_from_file("stations.txt")
-connections_data = read_nested_lists_from_file("connections.txt")
-stations_obj = station_creator(stations_data)
-add_connections_to_stations(connections_data, stations_obj)
-test_world = create_random_world(1, stations_obj)
-[print(train.get_id(), train.current_position()) for train in test_world]
-for train in test_world:
-    train.move()
-    print(train.get_id(), train.current_position())
-    train.move()
-    print(train.get_id(), train.current_position())
-    train.move()
-    print(train.get_id(), train.current_position())
-    train.move()
-    print(train.get_id(), train.current_position())
-    train.move()
-    print(train.get_id(), train.current_position())
-    train.move()
-    print(train.get_id(), train.current_position())
-    train.move()
-    print(train.get_id(), train.current_position())
-    train.move()
-    print(train.get_id(), train.current_position())
-    train.move()
-    print(train.get_id(), train.current_position())
-    train.move()
-    print(train.get_id(), train.current_position())
-    train.move()
-    print(train.get_id(), train.current_position())
-    train.move()
-    print(train.get_id(), train.current_position())
-    train.move()
-    print(train.get_id(), train.current_position())
-    train.move()
-    print(train.get_id(), train.current_position())
-    train.move()
-    print(train.get_id(), train.current_position())
-    train.move()
-    print(train.get_id(), train.current_position())
-    train.move()
-    print(train.get_id(), train.current_position())
-    
+def get_train_info(train_object):
+    train_id = train_object.get_id()
+    position = train_object.get_current_station()
+    line = train_object.get_line()
+    direction = train_object.get_direction()
+    delay_indicator = is_delayed(train_object)
+    (print(f"Train {train_id} on {line} line, is at station {position}, heading {direction} direction. {delay_indicator}")) 
+
+# def user_world_interaction(world, no_of_trains):
+#     is_active = True
+#     while is_active:
+#         user_selection = input("Continue simulation [1], train info [2], exit [q].\n").lower()
+#         while user_selection != "q":
+#             if user_selection == "1":
+#                 tick(world)
+#             elif user_selection == "2":
+#                 user_train_selection = int(input(f"Which train [1 - {no_of_trains}]: "))
+#                 selected_train = get_matching_train(world, user_train_selection)
+#                 get_train_info(selected_train)
+#                 break
+#             else:
+#                 print("Not a valid selection.")
+#                 user_selection = input("Continue simulation [1], train info [2], exit [q].").lower() #Error handling?
+#     #recursion here?
+#     #quit() #Will this only work if the user selects [q] ??
+
+def user_world_interaction(world):
+    no_of_trains = world.get_no_of_trains()
+    user_selection = input("Continue simulation [1], train info [2], exit [q].\n").lower()
+    while user_selection != "q":
+        if user_selection == "1":
+            world.tick()
+            user_selection = input("Continue simulation [1], train info [2], exit [q].\n").lower()
+        elif user_selection == "2":
+            user_train_selection = int(input(f"Which train [1 - {no_of_trains}]: "))
+            selected_train = world.get_train(user_train_selection)
+            get_train_info(selected_train)
+            user_selection = input("Continue simulation [1], train info [2], exit [q].\n").lower()
+        else:
+            print("Not a valid selection.")
+            user_selection = input("Continue simulation [1], train info [2], exit [q].").lower() #Error handling?
 
 
 
 
+def main():
+    """
+    This is the main function of the program.
+    """
+
+    in_stations, in_connections, in_no_of_trains = user_inputs()
+
+    #Read from file and create station objects.
+    station_data = read_nested_lists_from_file(in_stations)
+    station_objects = station_creator(station_data)
+
+    #Read from file and add connections to the station_objects.
+    connection_data = read_nested_lists_from_file(in_connections)
+    add_connections_to_stations(connection_data, station_objects)
+
+    #Create a number of trains at random stations based on user input.
+    train_objects = create_trains(in_no_of_trains, station_objects)
+
+    #Create the selected number of trains in assigned to random station objects.
+    new_world = World(station_objects, train_objects)
 
 
-# def main():
-#     """
-#     This is the main function of the program.
-#     """
+    user_world_interaction(new_world)
 
-    
-    
-    
+main()
+
+
+
+# stations_data = read_nested_lists_from_file("stations.txt")
+# connections_data = read_nested_lists_from_file("connections.txt")
+# stations_obj = station_creator(stations_data)
+# add_connections_to_stations(connections_data, stations_obj)
+# train_obj = create_trains(4, stations_obj)
+# a_world = World(stations_obj, train_obj)
+# print(a_world.get_train(1).current_position())
+# a_world.tick()
+# print(a_world.get_train(1).current_position())
+# print(len(a_world.get_trains()))
+# [print(train.get_id(), train.get_current_station(), train.get_line(), train.get_direction()) for train in test_world]
+# for train in test_world:
+#     train.move()
+#     print(train.get_id(), train.get_current_station(), train.get_line(), train.get_direction())
+#     train.move()
+#     print(train.get_id(), train.get_current_station(), train.get_line(), train.get_direction())
+
+# in_stations, in_connections, in_no_of_trains = user_inputs()
+# print(in_stations)
+# print(in_connections)
+# print(in_no_of_trains)
