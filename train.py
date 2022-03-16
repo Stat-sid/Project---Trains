@@ -14,9 +14,18 @@ class Train():
     def get_id(self):
         return self.id
 
-    # I know this will not work right for a station without connections.
+    def get_current_station(self):
+        return self.current_station.get_id()
+
+    def get_direction(self):
+        return self.direction
+
+    def get_line(self):
+        return self.line
+
+    # This will not work right for a station without connections.
     def move(self):
-        if self.__am_I_delayed():
+        if self._am_I_delayed():
             pass
         else:
             if self.__get_next_station() is None:
@@ -25,7 +34,7 @@ class Train():
             next_station = self.__get_next_station()
             self.current_station = next_station
 
-    def __am_I_delayed(self):
+    def _am_I_delayed(self):
         delay_probability = self.current_station.get_delay()
         if random.random() < delay_probability:
             return True
