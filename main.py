@@ -30,12 +30,6 @@ def choose_random_station(station_list):
     """
     return random.choice(station_list)
 
-def choose_random_direction():
-    """
-    Chooses a random direction between "N" for Northbound and "S" for Southbound.
-    """
-    return random.choice(["S","N"])
-
 def read_nested_lists_from_file(f):
     """
     Reads file f and gives a list of lists as output.
@@ -85,15 +79,6 @@ def get_matching_station(station, list_of_stations):
         if s.get_id() == station:
             return s
 
-def get_matching_line(station, line_dict):
-    for line in line_dict:
-        if station.get_id() in line_dict[line]:
-            return line
-
-def get_matching_train(set_of_trains, id):
-    for train in set_of_trains:
-        if train.get_id() == id:
-            return train
 
 def add_connections_to_stations(nested_lists, list_of_stations):
     for _from, to, line, direction in nested_lists:
@@ -118,7 +103,6 @@ def create_trains(no_of_trains, stations_list):
         random_connection = random.choice(random_station.get_connections())
         assigned_line = random_connection.get_line()
         random_direction = random_connection.get_direction()
-        # assigned_line = get_matching_line(random_station, line_dict)
         new_train = Train(id=train_id, line=assigned_line ,direction=random_direction, current_station=random_station)
         set_of_trains.add(new_train)
     return set_of_trains
@@ -178,12 +162,16 @@ def user_world_interaction(world):
             user_selection = input("Continue simulation [1], train info [2], exit [q].\n").lower()
         elif user_selection == "2":
             user_train_selection = int(input(f"Which train [1 - {no_of_trains}]: "))
+            # if int(user_selection) > no_of_trains:
+            #     print("Train does not exist, please try again.")
+            #     user_train_selection = int(input(f"Which train [1 - {no_of_trains}]: "))'
             selected_train = world.get_train(user_train_selection)
             get_train_info(selected_train)
             user_selection = input("Continue simulation [1], train info [2], exit [q].\n").lower()
         else:
             print("Not a valid selection.")
-            user_selection = input("Continue simulation [1], train info [2], exit [q].").lower() #Error handling?
+            user_selection = input("Continue simulation [1], train info [2], exit [q].").lower()
+        #print("Thank you and goodbye.")
 
 
 
