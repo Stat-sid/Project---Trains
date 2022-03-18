@@ -48,14 +48,49 @@ def get_string(prompt):
             return "EXIT"
     return string_input
 
-def get_int(prompt):
-    int_input = input((prompt))
-    if type(int_input) != int:
+def user_inputs_stations_file():
+    stations_input = get_string("Enter name of stations file:  ")
+    return stations_input
+
+def user_inputs_connections_file():
+    connections_user = get_string("Enter name of connections file:  ")
+    return connections_user
+
+def user_inputs_no_of_trains():
+    no_of_trains_user = input("Enter how many trains to simulate:  ")
+    return no_of_trains_user
+
+def IO_stations():
+    while True:
         try:
-            int_input = int(int_input)
+            stations_in = user_inputs_stations_file()
+            stations_data = read_nested_lists_from_file(stations_in)
+        except FileNotFoundError:
+            print("File not found. Try again.")
+        else:
+            break
+    return stations_data
+
+def IO_connections():
+    while True:
+        try:
+            connections_in = user_inputs_connections_file()
+            connection_data = read_nested_lists_from_file(connections_in)
+        except FileNotFoundError:
+            print("File not found. Try again.")
+        else:
+            break
+    return connection_data
+
+def IO_no_of_trains():
+    while True:
+        try:
+            no_of_trains = int(user_inputs_no_of_trains())
         except ValueError:
-            return "EXIT"
-    return int_input
+            print("Only integers accepted. Try again.")
+        else:
+            break
+    return no_of_trains
 
 def station_creator(nested_lists):
     """
@@ -78,7 +113,6 @@ def get_matching_station(station, list_of_stations):
     for s in list_of_stations:
         if s.get_id() == station:
             return s
-
 
 def add_connections_to_stations(nested_lists, list_of_stations):
     for _from, to, line, direction in nested_lists:
@@ -107,25 +141,15 @@ def create_trains(no_of_trains, stations_list):
         set_of_trains.add(new_train)
     return set_of_trains
 
-def create_world(list_of_stations, set_of_trains):
-    world = World(list_of_stations, set_of_trains)
-    return world
-
-def tick(set_of_trains):
-    for train in set_of_trains:
-        train.move()
-
-def user_inputs():
-    stations_input = get_string("Enter name of stations file:  ")
-    connections_user = get_string("Enter name of connections file:  ")
-    no_of_trains_user = get_int("Enter how many trains to simulate:  ")
-    return stations_input, connections_user, no_of_trains_user
-
 def is_delayed(train_object):
     if train_object._am_I_delayed():
         return "(DELAY)"
     else:
         return ""
+
+def create_world(list_of_stations, set_of_trains):
+    world = World(list_of_stations, set_of_trains)
+    return world
 
 def get_train_info(train_object):
     train_id = train_object.get_id()
@@ -135,43 +159,32 @@ def get_train_info(train_object):
     delay_indicator = is_delayed(train_object)
     (print(f"Train {train_id} on {line} line, is at station {position}, heading {direction} direction. {delay_indicator}")) 
 
-# def user_world_interaction(world, no_of_trains):
-#     is_active = True
-#     while is_active:
-#         user_selection = input("Continue simulation [1], train info [2], exit [q].\n").lower()
-#         while user_selection != "q":
-#             if user_selection == "1":
-#                 tick(world)
-#             elif user_selection == "2":
-#                 user_train_selection = int(input(f"Which train [1 - {no_of_trains}]: "))
-#                 selected_train = get_matching_train(world, user_train_selection)
-#                 get_train_info(selected_train)
-#                 break
-#             else:
-#                 print("Not a valid selection.")
-#                 user_selection = input("Continue simulation [1], train info [2], exit [q].").lower() #Error handling?
-#     #recursion here?
-#     #quit() #Will this only work if the user selects [q] ??
-
 def user_world_interaction(world):
     no_of_trains = world.get_no_of_trains()
-    user_selection = input("Continue simulation [1], train info [2], exit [q].\n").lower()
+    user_prompt = "Continue simulation [1], train info [2], exit [q].\n"
+    user_selection = input(user_prompt).lower()
     while user_selection != "q":
         if user_selection == "1":
             world.tick()
-            user_selection = input("Continue simulation [1], train info [2], exit [q].\n").lower()
+            user_selection = input(user_prompt).lower()
         elif user_selection == "2":
-            user_train_selection = int(input(f"Which train [1 - {no_of_trains}]: "))
-            # if int(user_selection) > no_of_trains:
-            #     print("Train does not exist, please try again.")
-            #     user_train_selection = int(input(f"Which train [1 - {no_of_trains}]: "))'
+            while True:
+                try:
+                    user_train_selection = int(input(f"Which train [1 - {no_of_trains}]: "))
+                except ValueError:
+                    print("Only integers accepted. Try again.")
+                else:
+                    if user_train_selection > no_of_trains:
+                        print("Train does not exist. Please select a valid train.")
+                    else:
+                        break            
             selected_train = world.get_train(user_train_selection)
             get_train_info(selected_train)
-            user_selection = input("Continue simulation [1], train info [2], exit [q].\n").lower()
+            user_selection = input(user_prompt).lower()
         else:
             print("Not a valid selection.")
-            user_selection = input("Continue simulation [1], train info [2], exit [q].").lower()
-        #print("Thank you and goodbye.")
+            user_selection = input(user_prompt).lower()
+    print("Thank you and goodbye.")
 
 
 
@@ -180,28 +193,26 @@ def main():
     """
     This is the main function of the program.
     """
-
-    in_stations, in_connections, in_no_of_trains = user_inputs()
-
     #Read from file and create station objects.
-    station_data = read_nested_lists_from_file(in_stations)
+    station_data = IO_stations()
     station_objects = station_creator(station_data)
 
     #Read from file and add connections to the station_objects.
-    connection_data = read_nested_lists_from_file(in_connections)
+    connection_data = IO_connections()
     add_connections_to_stations(connection_data, station_objects)
 
     #Create a number of trains at random stations based on user input.
+    in_no_of_trains = IO_no_of_trains()
     train_objects = create_trains(in_no_of_trains, station_objects)
 
-    #Create the selected number of trains in assigned to random station objects.
+    #Store the created trains in stations in a World object.
     new_world = World(station_objects, train_objects)
-
 
     user_world_interaction(new_world)
 
 main()
-
+# IO_stations()
+# IO_connections()
 
 
 # stations_data = read_nested_lists_from_file("stations.txt")
