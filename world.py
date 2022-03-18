@@ -4,12 +4,6 @@ class World():
         self.stations = stations
         self.trains = trains
 
-    # def set_stations(self):
-    #     pass
-    
-    # def set_trains(self):
-    #     pass
-
     def get_station(self, id):
         for s in self.stations:
             if s.get_id() == id:
@@ -32,5 +26,21 @@ class World():
     def tick(self):
         for train in self.trains:
             train.move()
+
+    def bfs(self, _from, visited = []):
+        queue = []
+        visited.append(_from)
+        queue.append(_from)
+        
+        while queue:
+            m = queue.pop(0)
+            print(m, end = " ")
+
+            for connection in m.get_connections():
+                if connection.get_to() not in visited:
+                    visited.append(connection.get_to())
+                    queue.append(connection.get_to())
+
+
 
 

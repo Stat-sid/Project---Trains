@@ -36,3 +36,10 @@ class Station():
 
     def remove_connection(self, connection):
         self.connections.remove(connection)
+
+    def is_next(self, to):
+        for connection in self.get_connections:
+            if to in connection:
+                return True
+            else:
+                return False
