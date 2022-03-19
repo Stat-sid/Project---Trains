@@ -1,22 +1,3 @@
-"""
-#### stations.txt ###
-A,0.001
-B,0.001
-C,0.2
-D,0.001
-X,0.1
-Y,0.1
-Z,0.1
-
-#### connections.txt ###
-A,B,blue,S
-B,C,blue,S
-C,D,blue,S
-X,Y,green,S
-Y,C,green,S
-C,Z,green,S
-
-"""
 import random
 from station import Station
 from connection import Connection
@@ -166,7 +147,8 @@ def IO_route_info_start(world):
             starting_in = input("Select a start station: ").upper()
             starting_station = world.get_station(starting_in)
         except KeyError:
-            print("Station does not exist. Please try again.")
+            print("Station does not exist. Please try again. Available stations:")
+            [print(station.get_id()) for station in world.get_stations()]
         else:
             break
     return starting_station
@@ -177,7 +159,8 @@ def IO_route_info_end(world):
             end_in = input("Select a end station: ").upper()
             end_station = world.get_station(end_in)
         except KeyError:
-            print("Station does not exist. Please try again.")
+            print("Station does not exist. Please try again. Available stations:")
+            [print(station.get_id()) for station in world.get_stations()]
         else:
             break
     return end_station
@@ -194,7 +177,7 @@ def IO_route_info_steps():
 
 def route_info(world, starting_station, end_station, selected_steps):
     shortest_path = world.get_shortest_path(starting_station, end_station)
-    if len(shortest_path) - 1 > selected_steps: # -1 in order to exclude the starting station.
+    if len(shortest_path) - 1 > selected_steps or not starting_station.get_connections(): # - 1 in order to exclude the starting station.
         return False
     else:
         return True
