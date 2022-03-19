@@ -92,6 +92,10 @@ def get_matching_station(station, list_of_stations):
             return s
 
 def add_connections_to_stations(connections_list, list_of_stations):
+    """
+    Takes connection input from file and a list of station objects and adds connections on existing objects, based
+    on input.
+    """
     for _from, to, line, direction in connections_list:
         from_station = get_matching_station(_from, list_of_stations)
         to_station = get_matching_station(to, list_of_stations)
