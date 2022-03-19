@@ -31,13 +31,17 @@ class World():
             train.move()
 
     def bfs(self, _from, visited = []):
+        """
+        __source__='https://www.geeksforgeeks.org/breadth-first-search-or-bfs-for-a-graph/'
+        __author__='Neelam Yadav'
+        __Adapted by__: 'Efstathios Sidiropoulos'
+        """    
         queue = []
         visited.append(_from)
         queue.append(_from)
           
         while queue:     
             m = queue.pop(0)
-            # print(m, end = " ")
 
             for connection in m.get_connections():
                 if connection.get_to() not in visited:
@@ -50,22 +54,22 @@ class World():
         """
         __source__='https://www.python.org/doc/essays/graphs/'
         __author__='Guido van Rossum'
-        Adapted by: Efstathios Sidiropoulos.
+        __Adapted by__: 'Efstathios Sidiropoulos'
         """
         path = path + [start]
         if start == end:
             return path
         if start not in self.stations:
             return None
-        shortest = None
+        shortest_path = None
 
         for connection in start.get_connections():
             if connection.get_to() not in path:
                 newpath = self.get_shortest_path(connection.get_to(), end, path)
                 if newpath:
-                    if not shortest or len(newpath) < len(shortest):
-                        shortest = newpath
-        return shortest
+                    if not shortest_path or len(newpath) < len(shortest_path):
+                        shortest_path = newpath
+        return shortest_path
 
 
 
