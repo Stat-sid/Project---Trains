@@ -181,7 +181,9 @@ def IO_route_info_steps():
 
 def route_info(world, starting_station, end_station, selected_steps):
     shortest_path = world.get_shortest_path(starting_station, end_station)
-    if len(shortest_path) - 1 > selected_steps or not starting_station.get_connections(): # - 1 in order to exclude the starting station.
+    if end_station not in world.bfs(starting_station):
+        return False
+    elif len(shortest_path) - 1 > selected_steps:  # - 1 in order to exclude the starting station.
         return False
     else:
         return True
@@ -194,10 +196,13 @@ def user_world_interaction(world):
     user_prompt = "Continue simulation [1], train info [2], route info [3] exit [q].\n"
     user_selection = input(user_prompt).lower()
     while user_selection != "q":
+
+        #Continue simulation
         if user_selection == "1":
             world.tick()
             user_selection = input(user_prompt).lower()
 
+        #Train info
         elif user_selection == "2":
             while True:
                 try:
@@ -213,6 +218,7 @@ def user_world_interaction(world):
             get_train_info(selected_train)
             user_selection = input(user_prompt).lower()
 
+        #Route info
         elif user_selection == "3":
             starting_station = IO_route_info_start(world)
             end_station = IO_route_info_end(world)
