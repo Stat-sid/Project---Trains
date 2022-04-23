@@ -1,6 +1,6 @@
 class Railroad_Network():
 
-    def __init__(self, graph = []) -> None:
+    def __init__(self, graph = {}) -> None:
         self.graph = graph
         
     #Get the keys to the dictionary.
